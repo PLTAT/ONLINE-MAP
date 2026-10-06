@@ -1,0 +1,437 @@
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="Leaflet_1.9.4.css"/>
+<title>Online Map</title>
+<style>
+body {background-color: rgba(85, 85, 85, 1.0);}
+#map {height: 540px;}
+
+.global-frame {
+background: rgba(127, 127, 127, .5);
+position: absolute;
+top: 555px;
+}
+
+#global-mouse {
+left: 255px;}
+
+#global-input {
+left: 512px;
+display: flex;
+flex-direction: column;
+}
+
+#global-jump {
+left: 768px;
+display: flex;
+flex-direction: column;
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<section class="global-frame">
+<section id=global_show_last_lat onclick="navigator.clipboard.writeText(map.getCenter().lat)" title="click to copy">last_lat 00.000000</section>
+<section id=global_show_last_lng onclick="navigator.clipboard.writeText(map.getCenter().lng)" title="click to copy">last_lng 000.000000</section>
+<section id=global_show_last_zoom onclick="navigator.clipboard.writeText(map.getZoom())" title="click to copy">last_zoom 0</section>
+</section>
+
+<section class="global-frame" id="global-mouse">
+<section id=global_show_mouse_lat>last_lat 00.000000000000000</section>
+<section id=global_show_mouse_lng>last_lng 000.00000000000000</section>
+<section id=global_show_mouse_zoom>last_zoom 0</section>
+</section>
+
+<section class="global-frame" id="global-input">
+<label for="global_lat_input">lat</label> <input id="global_lat_input">
+<label for="global_lng_input">lng</label> <input id="global_lng_input">
+<label for="global_zoom_input">zoom</label> <input id="global_zoom_input">
+<button id="global_lat_button">global_lat_button</button>
+<button id="global_lng_button">global_lng_button</button>
+<button id="global_zoom_button">global_zoom_button</button>
+<button id="global_lat_lng_button">global_lat_lng_button</button>
+<button id="global_lat_lng_zoom_button">global_lat_lng_zoom_button</button>
+</section>
+
+<section class="global-frame" id="global-jump">
+<button id="global_beiping_button">global_beiping_button</button>
+</section>
+
+<script src="Leaflet_1.9.4.js"></script>
+
+<script>
+
+var map = L.map('map', {})
+.setView([39.915735, 116.390810], 4);
+
+var osmde= L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
+maxZoom: 32,
+attribution: '<a href="http://openstreetmap.de" title="OpenStreetMap Community De">OpenStreetMap</a> Community De'
+});
+var osmfrosmfr = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+maxZoom: 32,
+attribution: '<a href="http://openstreetmap.fr" title="OpenStreetMap Community Fr">OpenStreetMap</a> Community Fr',
+subdomains: ['a', 'b', 'c']
+});
+var osmfrhot = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+maxZoom: 32,
+attribution: '<a href="http://openstreetmap.fr" title="OpenStreetMap Community Fr">OpenStreetMap</a> Community Fr',
+subdomains: ['a', 'b', 'c']
+});
+var osmfrcyclosm = L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
+maxZoom: 32,
+attribution: '<a href="http://openstreetmap.fr" title="OpenStreetMap Community Fr">OpenStreetMap</a> Community Fr',
+subdomains: ['a', 'b', 'c']
+});
+var osmfrcyclosmlite = L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm-lite/{z}/{x}/{y}.png', {
+maxZoom: 32,
+attribution: '<a href="http://openstreetmap.fr" title="OpenStreetMap Community Fr">OpenStreetMap</a> Community Fr'
+});
+
+var ArcGisImagery = L.tileLayer('https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.png', {
+maxZoom: 32,
+attribution: '<a href="http://arcgisonline.com" title="ArcGis 卫星">ArcGis</a> 卫星'
+});
+var ArcGisStreet = L.tileLayer('https://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}.png', {
+maxZoom: 32,
+attribution: '<a href="http://arcgisonline.com" title="ArcGis 街道">ArcGis</a> 街道'
+});
+var ArcGisTopo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+maxZoom: 32,
+attribution: '<a href="http://arcgisonline.com" title="ArcGis 地形">ArcGis</a> 地形'
+});
+
+var MapTilerTerrainRgbV2 = L.tileLayer('https://api.maptiler.com/tiles/terrain-rgb-v2/{z}/{x}/{y}.webp?key=get_your_own_D6rA4zTHduk6KOKTXzGB', {
+maxZoom: 32,
+attribution: '<a href="http://maptiler.com" title="MapTiler 高度 V2">MapTiler</a> 高度 V2'
+});
+var MapTilerStreetsV4 = L.tileLayer('https://api.maptiler.com/maps/streets-v4/{z}/{x}/{y}.png?key=get_your_own_D6rA4zTHduk6KOKTXzGB', {
+maxZoom: 32,
+attribution: '<a href="http://maptiler.com" title="MapTiler 街道 V4">MapTiler</a> 街道 V4'
+});
+var MapTilerTerrainRgbV3 = L.tileLayer('https://api.maptiler.com/tiles/terrain-rgb-v3/{z}/{x}/{y}.webp?key=get_your_own_D6rA4zTHduk6KOKTXzGB', {
+maxZoom: 32,
+attribution: '<a href="http://maptiler.com" title="MapTiler 高度 V3">MapTiler</a> 高度 V3'
+});
+var MapTilerStreetsV2 = L.tileLayer('https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=get_your_own_D6rA4zTHduk6KOKTXzGB', {
+maxZoom: 32,
+attribution: '<a href="http://maptiler.com" title="MapTiler 街道 V2">MapTiler</a> 街道 V2'
+});
+var MapTilerStreets = L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=get_your_own_D6rA4zTHduk6KOKTXzGB', {
+maxZoom: 32,
+attribution: '<a href="http://maptiler.com" title="MapTiler 街道">MapTiler</a> 街道'
+});
+
+var EoxAtTerrainLight = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/terrain-light_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 街道 白底">Eox</a> 街道 白底',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtCloudLess2025 = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 卫星 2025">Eox</a> 卫星 2025',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtCloudLess2024 = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 卫星 2024">Eox</a> 卫星 2024',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtCloudLess2023 = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2023_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 卫星 2023">Eox</a> 卫星 2023',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtCloudLess2022 = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2022_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 卫星 2022">Eox</a> 卫星 2022',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtCloudLess2021 = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2021_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 卫星 2021">Eox</a> 卫星 2021',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtCloudLess2020 = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 卫星 2020">Eox</a> 卫星 2020',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtCloudLess2019 = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2019_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 卫星 2019">Eox</a> 卫星 2019',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtCloudLess2018 = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2018_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 卫星 2018">Eox</a> 卫星 2018',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtCloudLess2016 = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 卫星 2016">Eox</a> 卫星 2016',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtTerrain = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/terrain_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 街道 绿底">Eox</a> 街道 绿底',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtOSM = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/osm_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox OpenStreetMap">Eox</a> OpenStreetMap',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtBlueMarble = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/bluemarble_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 日">Eox</a> 日',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtBlackMarble = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/blackmarble_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 夜">Eox</a> 夜',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtOverlayBase = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/overlay_base_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 仅路名">Eox</a> 仅路名',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+var EoxAtOverlayBaseBright = L.tileLayer('https://{s}.tiles.maps.eox.at/wmts/1.0.0/overlay_base_bright_3857/default/g/{z}/{y}/{x}.jpg', {
+maxZoom: 32,
+attribution: '<a href="http://eox.at" title="Eox 仅路名 镂空">Eox</a> 仅路名 镂空',
+subdomains: ['a', 'b', 'c', 'd', 'e', 'f']
+});
+
+var amap6 = L.tileLayer('https://{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
+maxZoom: 32,
+attribution: '<a href="http://autonavi.com" title="高德 卫星">高德</a> 卫星',
+subdomains: ['webst01', 'wprd01', 'webst02', 'wprd02', 'webst03', 'wprd03', 'webst04', 'wprd04']
+});
+var amap8 = L.tileLayer('https://{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', {
+maxZoom: 32,
+attribution: '<a href="http://autonavi.com" title="高德 仅路网">高德</a> 仅路网',
+subdomains: ['webst01', 'wprd01', 'webst02', 'wprd02', 'webst03', 'wprd03', 'webst04', 'wprd04']
+});
+var amap7 = L.tileLayer('https://{s}.is.autonavi.com/appmaptile?style=7&x={x}&y={y}&z={z}', {
+maxZoom: 32,
+attribution: '<a href="http://autonavi.com" title="高德 标准">高德</a> 标准',
+subdomains: ['webst01', 'wprd01', 'webst02', 'wprd02', 'webst03', 'wprd03', 'webst04', 'wprd04']
+});
+var amap9 = L.tileLayer('https://{s}.is.autonavi.com/appmaptile?style=9&x={x}&y={y}&z={z}', {
+maxZoom: 32,
+attribution: '<a href="http://autonavi.com" title="高德 少细节">高德</a> 少细节',
+subdomains: ['webst01', 'wprd01', 'webst02', 'wprd02', 'webst03', 'wprd03', 'webst04', 'wprd04']
+});
+var amap10 = L.tileLayer('https://{s}.is.autonavi.com/appmaptile?style=10&x={x}&y={y}&z={z}', {
+maxZoom: 32,
+attribution: '<a href="http://autonavi.com" title="高德 简约">高德</a> 简约',
+subdomains: ['webst01', 'wprd01', 'webst02', 'wprd02', 'webst03', 'wprd03', 'webst04', 'wprd04']
+});
+
+var vec0 = L.tileLayer('https://t{s}.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=b88bfb160c81dab8d9d20aaa74846360', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 街道">天地图</a> 街道',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var img0 = L.tileLayer('https://t{s}.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=b88bfb160c81dab8d9d20aaa74846360', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 卫星">天地图</a> 卫星',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var ter0 = L.tileLayer('https://t{s}.tianditu.gov.cn/ter_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ter&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=b88bfb160c81dab8d9d20aaa74846360', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 地形">天地图</a> 地形',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var glc2000 = L.tileLayer('https://t{s}.tianditu.gov.cn/glc2000_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=glc2000&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=b88bfb160c81dab8d9d20aaa74846360', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 地表覆盖2000">天地图</a> 地表覆盖2000',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var glc2010 = L.tileLayer('https://t{s}.tianditu.gov.cn/glc2010_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=glc2010&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=b88bfb160c81dab8d9d20aaa74846360', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 地表覆盖2010">天地图</a> 地表覆盖2010',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var glc2020 = L.tileLayer('https://t{s}.tianditu.gov.cn/glc2020_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=glc2020&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=b88bfb160c81dab8d9d20aaa74846360', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 地表覆盖2020">天地图</a> 地表覆盖2020',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var vec2 = L.tileLayer('https://t{s}.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=75f0434f240669f4a2df6359275146d2', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 旧街道">天地图</a> 旧街道',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var cva = L.tileLayer('https://t{s}.tianditu.gov.cn/cva_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cva&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=75f0434f240669f4a2df6359275146d2', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 旧街道 仅路名">天地图</a> 旧街道 仅路名',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var img2 = L.tileLayer('https://t{s}.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=75f0434f240669f4a2df6359275146d2', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 旧卫星">天地图</a> 旧卫星',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var cia = L.tileLayer('https://t{s}.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=75f0434f240669f4a2df6359275146d2', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 旧卫星 仅路网">天地图</a> 旧卫星 仅路网',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var ter2 = L.tileLayer('https://t{s}.tianditu.gov.cn/ter_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ter&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=75f0434f240669f4a2df6359275146d2', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 旧地形">天地图</a> 旧地形',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+var cta = L.tileLayer('https://t{s}.tianditu.gov.cn/cta_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cta&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}&tk=75f0434f240669f4a2df6359275146d2', {
+maxZoom: 32,
+attribution: '<a href="http://www.tianditu.gov.cn" title="天地图 旧地形 仅路名">天地图</a> 旧地形 仅路名',
+subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
+});
+
+osmde
+.addTo(map);
+
+var baseLayers = {
+"OpenStreetMap DE": osmde,
+"OpenStreetMap FR osmfr": osmfrosmfr,
+"OpenStreetMap FR hot": osmfrhot,
+"OpenStreetMap FR cyclosm": osmfrcyclosm,
+"OpenStreetMap FR cyclosm-lite": osmfrcyclosmlite,
+"ArcGis 卫星": ArcGisImagery,
+"ArcGis 街道": ArcGisStreet,
+"ArcGis 地形": ArcGisTopo,
+"MapTiler 高度 V2": MapTilerTerrainRgbV2,
+"MapTiler 街道 V4": MapTilerStreetsV4,
+"MapTiler 高度 V3": MapTilerTerrainRgbV3,
+"MapTiler 街道 V2": MapTilerStreetsV2,
+"MapTiler 街道": MapTilerStreets,
+"Eox At 街道 白底 3857": EoxAtTerrainLight,
+"Eox At 卫星 2025 3857": EoxAtCloudLess2025,
+"Eox At 卫星 2024 3857": EoxAtCloudLess2024,
+"Eox At 卫星 2023 3857": EoxAtCloudLess2023,
+"Eox At 卫星 2022 3857": EoxAtCloudLess2022,
+"Eox At 卫星 2021 3857": EoxAtCloudLess2021,
+"Eox At 卫星 2020 3857": EoxAtCloudLess2020,
+"Eox At 卫星 2019 3857": EoxAtCloudLess2019,
+"Eox At 卫星 2018 3857": EoxAtCloudLess2018,
+"Eox At 卫星 2016 3857": EoxAtCloudLess2016,
+"Eox At 街道 绿底 3857": EoxAtTerrain,
+"Eox At OpenStreetMap 3857": EoxAtOSM,
+"Eox At 日 3857": EoxAtBlueMarble,
+"Eox At 夜 3857": EoxAtBlackMarble,
+"Eox At 仅路名 3857": EoxAtOverlayBase,
+"Eox At 仅路名 镂空 3857": EoxAtOverlayBaseBright,
+"高德 右偏移 卫星": amap6,
+"高德 右偏移 仅路网": amap8,
+"高德 右偏移 标准": amap7,
+"高德 右偏移 少细节": amap9,
+"高德 右偏移 简约": amap10,
+"天地图 街道": vec0,
+"天地图 卫星": img0,
+"天地图 地形": ter0,
+"天地图 地表覆盖 2000": glc2000,
+"天地图 地表覆盖 2010": glc2010,
+"天地图 地表覆盖 2020": glc2020,
+"天地图 旧街道": vec2,
+"天地图 旧街道 仅路名": cva,
+"天地图 旧卫星": img2,
+"天地图 旧卫星 仅路网": cia,
+"天地图 旧地形": ter2,
+"天地图 旧地形 仅路网": cta,
+};
+var overlays = {
+"OpenStreetMap FR cyclosm-lite": osmfrcyclosmlite,
+"Eox At 仅路名 3857": EoxAtOverlayBase,
+"Eox At 仅路名 镂空 3857": EoxAtOverlayBaseBright,
+"高德 右偏移 仅路网": amap8,
+"天地图 旧街道 仅路名": cva,
+"天地图 旧卫星 仅路网": cia,
+"天地图 旧地形 仅路网": cta
+};
+L.control.layers(
+baseLayers,
+overlays
+)
+.addTo(map);
+
+var popup = L.popup();
+
+function onMapClick(local_get_lat_lng) {
+popup
+.setLatLng(local_get_lat_lng.latlng)
+.setContent(" " + local_get_lat_lng.latlng.toString())
+.openOn(map);
+}
+
+map.on('click', onMapClick);
+
+function global_update_last_zoom() {
+document.getElementById('global_show_last_lat').innerText = 'last_lat ' + map.getCenter().lat;
+document.getElementById('global_show_last_lng').innerText = 'last_lng ' + map.getCenter().lng;
+document.getElementById('global_show_last_zoom').innerText = 'last_zoom ' + map.getZoom();
+}
+map.on('zoomend', function() {
+global_update_last_zoom();
+}
+);
+global_update_last_zoom();
+
+map.on('mousemove', function(local_get) {
+document.getElementById('global_show_mouse_lat').innerText = 'mouse_lat ' + local_get.latlng.lat;
+document.getElementById('global_show_mouse_lng').innerText = 'mouse_lng ' + local_get.latlng.lng;
+document.getElementById('global_show_mouse_zoom').innerText = 'mouse_zoom ' + map.getZoom();
+}
+);
+
+document.getElementById('global_lat_button').onclick = function() {
+if (document.getElementById('global_lat_input').value) {
+map.setView([document.getElementById('global_lat_input').value, map.getCenter().lng], map.getZoom());
+}
+};
+
+document.getElementById('global_lng_button').onclick = function() {
+if (document.getElementById('global_lng_input').value) {
+map.setView([map.getCenter().lat, document.getElementById('global_lng_input').value], map.getZoom());
+}
+};
+
+document.getElementById('global_zoom_button').onclick = function() {
+if (document.getElementById('global_zoom_input').value) {
+map.setZoom(document.getElementById('global_zoom_input').value);
+}
+};
+
+document.getElementById('global_lat_lng_button').onclick = function() {
+if (document.getElementById('global_lat_input').value && document.getElementById('global_lng_input').value) {
+map.setView([document.getElementById('global_lat_input').value, document.getElementById('global_lng_input').value], map.getZoom());
+}
+};
+
+document.getElementById('global_lat_lng_zoom_button').onclick = function() {
+if (document.getElementById('global_lat_input').value && document.getElementById('global_lng_input').value && document.getElementById('global_zoom_input').value) {
+map.setView([document.getElementById('global_lat_input').value, document.getElementById('global_lng_input').value], document.getElementById('global_zoom_input').value);
+}
+};
+
+document.getElementById('global_beiping_button').onclick = function() {
+map.setView([39.915735, 116.390810], map.getZoom());
+};
+
+</script>
+</body>
+</html>
+
+
+
+
